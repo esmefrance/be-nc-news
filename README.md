@@ -1,8 +1,11 @@
 # Northcoders News API
 
-For instructions, please head over to [L2C NC News](https://l2c.northcoders.com/courses/be/nc-news).
+This Repository contains two databases. 
+You will need to create two .env files for the code to run: 
+.env.test and 
+.env.development. 
 
-
+Into each file, add PGDATABASE=, with the correct database name for that environment (see /db/setup.sql for the database names). Double check that these .env files are .gitignored.
 
 --- 
 
