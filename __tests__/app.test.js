@@ -13,7 +13,7 @@ describe("GET API topics", () => {
     return request(app)
       .get("/api/topics/")
       .expect(200)
-      .then(({body}) => {
+      .then(({ body }) => {
         expect(Array.isArray(body.topics)).toBe(true);
       });
   });
@@ -43,40 +43,71 @@ describe("GET Endpoints", () => {
   });
 });
 
-describe('GET articles by ID', () => {
-    test('should return an object with the relevant properties ', () => {
-        return request(app)
+describe("GET articles by ID", () => {
+  test("should return an object with the relevant properties ", () => {
+    return request(app)
       .get("/api/articles/1")
       .expect(200)
-      .then(({body:  {article} }) => {
+      .then(({ body: { article } }) => {
         expect(article).toMatchObject({
-            article_id: 1,
-            title: "Living in the shadow of a great man",
-            topic: "mitch",
-            author: "butter_bridge",
-            body: "I find this existence challenging",
-            created_at: "2020-07-09T20:11:00.000Z",
-            votes: 100,
-            article_img_url:
-              "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"  
+          article_id: 1,
+          title: "Living in the shadow of a great man",
+          topic: "mitch",
+          author: "butter_bridge",
+          body: "I find this existence challenging",
+          created_at: "2020-07-09T20:11:00.000Z",
+          votes: 100,
+          article_img_url:
+            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
         });
       });
-    });
-    test('404: should return an error when invalid article ID is entered ', () => {
-        return request(app)
+  });
+  test("400: should return an error when invalid article ID is entered e.g. 'cat' ", () => {
+    return request(app)
       .get("/api/articles/cat")
-      .expect(500)
-      .then(({body}) => {
-        expect(body.msg).toBe("Internal server error")
-    })
-    });
-    test('should return an error when an incorrect article ID is entered', () => {
-        return request(app)
-        .get("/api/articles/123456789")
-        .expect(500)
-        .then(({body}) => {
-          expect(body.msg).toBe("Internal server error")
-        })
-    });
-    });
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+  test("404 should return an error when an incorrect article ID is entered e.g.'123456789' ", () => {
+    return request(app)
+      .get("/api/articles/123456789")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not found");
+      });
+  });
+});
 
+describe("GET all articles", () => {
+  test("should respond with array of article objects", () => {
+    return request(app)
+      .get("/api/articles/")
+      .expect(200)
+      .then((response) => {  
+        const articles = response.body.articles
+        articles.forEach((article) => {
+          expect(article).toEqual({
+            article_id: expect.any(Number),
+            title: expect.any(String),
+            topic: expect.any(String),
+            author: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(String)
+          });
+        });
+      });
+  });
+  test("responds with the articles ordered by created_date descending by default",()=>{
+    return request(app)
+    .get("/api/articles/")
+    .expect(200)
+    .then((response) => {  
+        const articles = response.body.articles
+      expect(articles).toBeSortedBy( 'created_at', { descending: true})
+  })
+});
+});

@@ -35,8 +35,6 @@
     "postgres": "^3.4.4"
   },
   "jest": {
-    "setupFilesAfterEnv": [
-      "jest-extended/all"
-    ]
+    "setupFilesAfterEnv": ["jest-extended/all"]
   }
 }
