@@ -1,4 +1,6 @@
 const db = require("../db/connection");
+const checkArticleExists = require("../db/utils");
+
 
 exports.fetchArticleByID = (articleID) => {
   return db
@@ -36,3 +38,24 @@ exports.fetchAllArticles = () =>{
       throw err;
     });
 };
+
+exports.updateArticle = (articleID, patchInfo) =>{
+const voteUpdate = patchInfo.inc_votes
+const queryValues =[voteUpdate, articleID]
+const promiseArray = [];
+
+let sqlString = 'UPDATE articles SET votes = votes+ $1 WHERE article_id= $2 RETURNING *;'
+
+promiseArray.push(db.query(sqlString, queryValues));
+
+if (articleID !== undefined) {
+  promiseArray.push(checkArticleExists(articleID));
+}
+
+return Promise.all(promiseArray).then(([queryResults, articleResults]) => {
+  if (queryResults.rows.length === 0 && articleResults === false) {
+    return Promise.reject({ status: 404, msg: "Not found" });
+  }
+  return queryResults.rows[0]
+});
+}

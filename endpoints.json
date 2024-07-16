@@ -50,8 +50,39 @@
         "votes": 0,
         "author": "icellusedkars",
         "article_id": 1,
-        "created_at": 1604437200000
+        "created_at": "2024-02-16T16:09:47.547Z"
       }
   }
-}
+},
+
+"POST /api/articles/:article_id/comments":{
+  "description": "adds a  comment to a linked article ID",
+      "queries": ["article_id", "username", "body"],
+      "exampleResponse":{
+        "comment": 
+        {
+          "comment_id": 19,
+          "body": "Laptops are useful!",
+          "article_id": 2,
+          "author": "rogersop",
+          "votes": 0,
+          "created_at": "2024-07-16T16:09:47.547Z"
+        }
+    }
+  },
+  "PATCH /api/articles/:article_id/":{
+  "description": "updates the vote count on an article",
+      "queries": ["article_id", "vote_inc"],
+      "exampleResponse":{
+        "comment": 
+        {
+          "comment_id": 19,
+          "body": "Laptops are useful!",
+          "article_id": 2,
+          "author": "rogersop",
+          "votes": 10,
+          "created_at": "2024-07-16T16:09:47.547Z"
+        }
+    }
+  }
 }
