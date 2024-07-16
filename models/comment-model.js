@@ -1,45 +1,50 @@
-const getArticleByID  = require("../controllers/article-controller");
+const getArticleByID = require("../controllers/article-controller");
 const db = require("../db/connection");
-const checkArticleExists =require("../db/utils")
+const checkArticleExists = require("../db/utils");
+var format = require("pg-format");
 
-exports.fetchCommentsByArticle = (articleID) =>{
-const queryValues = []
-let sqlString = 'SELECT * FROM comments '
+exports.fetchCommentsByArticle = (articleID) => {
+  const queryValues = [];
+  let sqlString = "SELECT * FROM comments ";
 
-if(articleID){ 
-    sqlString+= 'WHERE article_id =$1 '
-    queryValues.push(articleID)
-}
-sqlString+= 'ORDER BY created_at DESC;'
+  if (articleID) {
+    sqlString += "WHERE article_id =$1 ";
+    queryValues.push(articleID);
+  }
+  sqlString += "ORDER BY created_at DESC;";
 
-const promiseArray = []
-promiseArray.push(db.query(sqlString, queryValues))
+  const promiseArray = [];
+  promiseArray.push(db.query(sqlString, queryValues));
 
-if(articleID !== undefined){
-    promiseArray.push(checkArticleExists(articleID))
-}
+  if (articleID !== undefined) {
+    promiseArray.push(checkArticleExists(articleID));
+  }
 
-return Promise.all(promiseArray).then(([queryResults, articleResults])=>{
-    if(queryResults.rows.length ===0 && articleResults===false){
-        return Promise.reject({ status: 404, msg: "Not found" })
+  return Promise.all(promiseArray).then(([queryResults, articleResults]) => {
+    if (queryResults.rows.length === 0 && articleResults === false) {
+      return Promise.reject({ status: 404, msg: "Not found" });
     }
 
-    return queryResults.rows
-})
+    return queryResults.rows;
+  });
+};
 
-    // return db
-    //   .query(sqlString, queryValues)
-    //   .then(({ rows }) => {
-    //       const comments = rows
-    //       if(checkArticleExists(articleID)&& comments.length===0){
-    //         return Promise.reject({ status: 200, msg: "No comments found" });
-    //       }
-    //     if (comments.length===0) {
-    //       return Promise.reject({ status: 404, msg: "Not found" });
-    //     }
-    //     return comments
-    //   })
-    //   .catch((err) => {
-    //       throw err;
-    //     });
-  };
+exports.addCommentToArticle = (articleID, { body, author, article_id }) => {
+  const queryValues = [body, author, article_id];
+  const promiseArray = [];
+  let sqlString = `INSERT INTO comments (body, author, article_id) VALUES($1, $2, $3) RETURNING *;`;
+
+  promiseArray.push(db.query(sqlString, queryValues));
+
+  if (articleID !== undefined) {
+    promiseArray.push(checkArticleExists(articleID));
+  }
+
+  return Promise.all(promiseArray).then(([queryResults, articleResults]) => {
+    if (queryResults.rows.length === 0 && articleResults === false) {
+      return Promise.reject({ status: 404, msg: "Not found" });
+    }
+
+    return queryResults.rows[0];
+  });
+};
