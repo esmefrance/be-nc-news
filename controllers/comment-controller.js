@@ -13,7 +13,7 @@ exports.getCommentsByArticle =( request, response, next) => {
       const articleID = request.params.article_id
       const postInfo = request.body
       addCommentToArticle(articleID, postInfo).then((result)=>{
-        response.status(200).send(result);
+        response.status(201).send({comment: result});
     }).catch((err)=>{
       next(err)
   })
