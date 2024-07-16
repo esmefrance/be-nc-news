@@ -4,6 +4,9 @@ const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
 const data = require("../db/data/test-data/index");
 const endpoints = require("../endpoints.json");
+const express = require('express')
+
+app.use(express.json())
 
 beforeAll(() => seed(data));
 afterAll(() => db.end());
@@ -97,7 +100,7 @@ describe("GET all articles", () => {
               created_at: expect.any(String),
               votes: expect.any(Number),
               article_img_url: expect.any(String),
-              comment_count: expect.any(String),
+              comment_count: expect.any(Number)
             });
           });
         }
@@ -158,8 +161,54 @@ describe("GET all article comments", () => {
       .get("/api/articles/123456789/comments")
       .expect(404)
       .then(({ body }) => {
-
         expect(body.msg).toBe("Not found");
+      });
+  });
+});
+
+describe('POST /api/articles/:article_id/comments/', () => {
+  test('should add a comment to an article ', () => {
+    return request(app)
+      .post("/api/articles/2/comments/")
+      .send({
+        body: "Laptops are useful!",
+        author: "rogersop",
+        article_id: 2
+      })
+      .expect(200)
+      .then(({ body}) => {
+        expect(body).toMatchObject({
+          comment_id: 19,
+          body: 'Laptops are useful!',
+          article_id: 2,
+          author: 'rogersop'
+        })
+      })
+  });
+  test("404:error when an incorrect article ID is entered e.g.'123456789' ", () => {
+    return request(app)
+      .post("/api/articles/123456789/comments")
+      .send({
+        body: "I like pears!",
+        author: "rogersop",
+        article_id: 123456789
+      })
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not found");
+      });
+  });
+
+  test('should return a bad request error if no comment is sent ', () => {
+    return request(app)
+      .post("/api/articles/2/comments")
+      .send({
+        author: "rogersop",
+        article_id: 2
+      })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
       });
   });
 });
