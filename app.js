@@ -3,6 +3,7 @@ const app = express();
 
 const { getTopics, getEndpoints } = require("./controllers/basic-controller");
 const { getArticleByID, getAllArticles } = require("./controllers/article-controller");
+const {getCommentsByArticle} =require("./controllers/comment-controller.js")
 
 
 app.get("/api/", getEndpoints);
@@ -12,6 +13,8 @@ app.get("/api/topics/", getTopics);
 app.get("/api/articles/:article_id/", getArticleByID);
 
 app.get("/api/articles/", getAllArticles);
+
+app.get("/api/articles/:article_id/comments/", getCommentsByArticle)
 
 app.use((err, req, res, next) => {
     if (err.status && err.msg) {
@@ -31,6 +34,7 @@ app.use((err, req, res, next) => {
   });
 
 app.use(( err, req, res, next) => {
+  console.error(err)
     res.status(500).send({ msg: "Internal server error" });
 })
 

@@ -2,7 +2,7 @@ const db = require("../db/connection");
 
 exports.fetchArticleByID = (articleID) => {
   return db
-    .query(`SELECT *FROM articles WHERE article_id =${articleID}`)
+    .query(`SELECT *FROM articles WHERE article_id =$1`,[articleID])
     .then(({ rows }) => {
         const article = rows[0]
       if (!article) {
@@ -33,7 +33,6 @@ exports.fetchAllArticles = () =>{
       return rows;
     })
     .catch((err) => {
-      console.error(err + '  <<< error in model')
-      return Promise.reject({ status: 500, message: "Internal Server Error" }); 
+      throw err;
     });
 };
