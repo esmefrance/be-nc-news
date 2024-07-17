@@ -244,7 +244,12 @@ describe("PATCH /api/articles/:article_id/", () => {
       .then(({ body: { article } }) => {
         expect(article).toMatchObject({
           article_id: 3,
+          title: "Eight pug gifs that remind me of mitch",
+          topic: "mitch",
+          author: "icellusedkars",
+          created_at: expect.any(String),
           votes: 10,
+          article_img_url: "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
         });
       });
   });
@@ -279,7 +284,7 @@ describe("PATCH /api/articles/:article_id/", () => {
       });
   });
 
-  test(" error when invalid vote_inc data is sent", () => {
+  test(" 400: Bad request error when invalid vote_inc data is sent", () => {
     return request(app)
       .patch("/api/articles/1/")
       .send({ inc_votes: "ten" })
@@ -303,4 +308,50 @@ describe("DELETE /api/comments/:comment_id/", () => {
         expect(body.msg).toBe("Not found");
       });
   });
+
+  test("400: Bad request error if comment_id is invalid", () => {
+    return request(app)
+      .delete("/api/comments/ten")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
 });
+
+describe('GET /api/users/', () => {
+  test('should return an array with the correct number of user objects', () => {
+    return request(app)
+    .get("/api/users")
+    .expect(200)
+    .then(({body}) => {
+      expect(Array.isArray(body.users)).toBe(true);
+      expect(body.users.length).toEqual(4)
+  })
+})
+
+  test('each user object should have the relevant properties', () => {
+    return request(app)
+    .get("/api/users")
+    .expect(200)
+    .then((response) => {
+      const users = response.body.users;
+        users.forEach((user) => {
+          expect(user).toEqual({
+            username: expect.any(String),
+            name: expect.any(String),
+            avatar_url: expect.any(String)
+          });
+        });
+      })
+    });
+
+    test('error when endpoint is spelt incorrectly', () => {
+      return request(app)
+      .get("/api/userz")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not found");
+      });
+    })
+  });
