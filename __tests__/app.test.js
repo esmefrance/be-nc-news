@@ -117,6 +117,45 @@ describe("GET all articles", () => {
   });
 });
 
+describe('GET /api/articles?sort_by=x&order=ASC', () => {
+  test('should return all articles sorted by "title" in ascending order', () => {
+    return request(app)
+    .get("/api/articles?sort_by=title&order=ASC")
+    .expect(200)
+    .then((response) => {
+      const articles = response.body.articles;
+      expect(articles).toBeSortedBy("title", { ascending: true });
+    })
+  });
+
+  test('should return all articles sorted by "author" in descending order', () => {
+    return request(app)
+    .get("/api/articles?sort_by=author&order=DESC")
+    .expect(200)
+    .then((response) => {
+      const articles = response.body.articles;
+      expect(articles).toBeSortedBy("author", { descending: true });
+    })
+  });
+test('400: Bad request error if invalid sort_by given ', () => {
+  return request(app)
+  .get("/api/articles?sort_by=article_image_url&order=DESC")
+  .expect(400)
+  .then(({ body }) => {
+    expect(body.msg).toBe("Bad request");
+  });
+});
+
+test('404: Not found error if invalid order given', () => {
+  return request(app)
+  .get("/api/articles?sort_by=title&order=atoz")
+  .expect(404)
+  .then(({ body }) => {
+    expect(body.msg).toBe("Not found");
+  });
+});
+});
+
 describe("GET all article comments", () => {
   test("respond with all comments for a specific article", () => {
     return request(app)
@@ -324,27 +363,19 @@ describe('GET /api/users/', () => {
     return request(app)
     .get("/api/users")
     .expect(200)
-    .then(({body}) => {
-      expect(Array.isArray(body.users)).toBe(true);
-      expect(body.users.length).toEqual(4)
-  })
-})
-
-  test('each user object should have the relevant properties', () => {
-    return request(app)
-    .get("/api/users")
-    .expect(200)
     .then((response) => {
       const users = response.body.users;
-        users.forEach((user) => {
-          expect(user).toEqual({
-            username: expect.any(String),
-            name: expect.any(String),
-            avatar_url: expect.any(String)
-          });
+      expect(Array.isArray(users)).toBe(true);
+      expect(users.length).toEqual(4)
+      users.forEach((user) => {
+        expect(user).toEqual({
+          username: expect.any(String),
+          name: expect.any(String),
+          avatar_url: expect.any(String)
         });
-      })
-    });
+      });
+  })
+})
 
     test('error when endpoint is spelt incorrectly', () => {
       return request(app)
