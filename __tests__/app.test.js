@@ -4,9 +4,9 @@ const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
 const data = require("../db/data/test-data/index");
 const endpoints = require("../endpoints.json");
-const express = require('express')
+const express = require("express");
 
-app.use(express.json())
+app.use(express.json());
 
 beforeAll(() => seed(data));
 afterAll(() => db.end());
@@ -100,7 +100,7 @@ describe("GET all articles", () => {
               created_at: expect.any(String),
               votes: expect.any(Number),
               article_img_url: expect.any(String),
-              comment_count: expect.any(Number)
+              comment_count: expect.any(Number),
             });
           });
         }
@@ -147,7 +147,7 @@ describe("GET all article comments", () => {
         expect(comments).toBeSortedBy("created_at", { descending: true });
       });
   });
-  test('should return an empty array if the article exists but there are no comments', () => {
+  test("should return an empty array if the article exists but there are no comments", () => {
     return request(app)
       .get("/api/articles/2/comments")
       .expect(200)
@@ -166,22 +166,23 @@ describe("GET all article comments", () => {
   });
 });
 
-describe('POST /api/articles/:article_id/comments/', () => {
-  test('should add a comment to an article ', () => {
+describe("POST /api/articles/:article_id/comments/", () => {
+  test("should add a comment to an article ", () => {
     return request(app)
       .post("/api/articles/2/comments/")
       .send({
         body: "Laptops are useful!",
-        author: "rogersop"      })
+        author: "rogersop",
+      })
       .expect(201)
-      .then(({ body}) => {
+      .then(({ body }) => {
         expect(body.comment).toMatchObject({
           comment_id: 19,
-          body: 'Laptops are useful!',
+          body: "Laptops are useful!",
           article_id: 2,
-          author: 'rogersop'
-        })
-      })
+          author: "rogersop",
+        });
+      });
   });
   test("404: Not found error when an incorrect article ID is entered e.g.'123456789' ", () => {
     return request(app)
@@ -196,12 +197,12 @@ describe('POST /api/articles/:article_id/comments/', () => {
       });
   });
 
-  test('400: Bad request error if no comment is sent ', () => {
+  test("400: Bad request error if no comment is sent ", () => {
     return request(app)
       .post("/api/articles/2/comments")
       .send({
         body: "",
-        author: "rogersop"
+        author: "rogersop",
       })
       .expect(400)
       .then(({ body }) => {
@@ -209,19 +210,19 @@ describe('POST /api/articles/:article_id/comments/', () => {
       });
   });
 
-  test('400: Bad request error if invalid article_id', () => {
+  test("400: Bad request error if invalid article_id", () => {
     return request(app)
       .post("/api/articles/bananas/comments")
       .send({
         body: "I like bananas!",
-        author: "rogersop"
+        author: "rogersop",
       })
       .then(({ body }) => {
         expect(body.msg).toBe("Bad request");
       });
   });
 
-  test('404: Not found error if author does not exist', () => {
+  test("404: Not found error if author does not exist", () => {
     return request(app)
       .post("/api/articles/2/comments")
       .send({
@@ -235,59 +236,71 @@ describe('POST /api/articles/:article_id/comments/', () => {
   });
 });
 
-describe('PATCH /api/articles/:article_id/', () => {
-  test('when the article votes property is missing, it should add votes to an article with the matching article_id', () => {
+describe("PATCH /api/articles/:article_id/", () => {
+  test("when the article votes property is missing, it should add votes to an article with the matching article_id", () => {
     return request(app)
-    .patch('/api/articles/3/')
-    .send({inc_votes : 10 })
-    .then(({ body: { article } }) => {
-      expect(article).toMatchObject({
-        article_id: 3,
-        votes: 10
-      })
+      .patch("/api/articles/3/")
+      .send({ inc_votes: 10 })
+      .then(({ body: { article } }) => {
+        expect(article).toMatchObject({
+          article_id: 3,
+          votes: 10,
+        });
+      });
   });
-})
 
-test('should update votes count, when there is an existing property and value on the article', () => {
-  return request(app)
-  .patch('/api/articles/1/')
-  .send({inc_votes : -10 })
-  .then(({ body: { article } }) => {
-    expect(article).toMatchObject({
-      article_id: 1,
-      votes: 90
-    })
+  test("should update votes count, when there is an existing property and value on the article", () => {
+    return request(app)
+      .patch("/api/articles/1/")
+      .send({ inc_votes: -10 })
+      .then(({ body: { article } }) => {
+        expect(article).toMatchObject({
+          article_id: 1,
+          votes: 90,
+        });
+      });
+  });
+  test("400: Bad request error when no inc_votes value is sent", () => {
+    return request(app)
+      .patch("/api/articles/1/")
+      .send({})
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+  test("404: Not found error when invalid article_id is sent", () => {
+    return request(app)
+      .patch("/api/articles/123456789/")
+      .send({ inc_votes: 100 })
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not found");
+      });
+  });
+
+  test(" error when invalid vote_inc data is sent", () => {
+    return request(app)
+      .patch("/api/articles/1/")
+      .send({ inc_votes: "ten" })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
 });
-})
-test('400: Bad request error when no inc_votes value is sent', () => {
-  return request(app)
-  .patch('/api/articles/1/')
-  .send({})
-  .expect(400)
-    .then(({ body }) => {
-      expect(body.msg).toBe("Bad request");
-    });
+
+describe("DELETE /api/comments/:comment_id/", () => {
+  test("should delete a comment by comment_id", () => {
+    return request(app).delete("/api/comments/11").expect(204);
+  });
+
+  test("404: Not found error if comment_id does not exist ", () => {
+    return request(app)
+      .delete("/api/comments/99")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not found");
+      });
+  });
 });
-test('404: Not found error when invalid article_id is sent', () => {
-  return request(app)
-  .patch('/api/articles/123456789/')
-  .send({inc_votes : 100 })
-  .expect(404)
-    .then(({ body }) => {
-      expect(body.msg).toBe("Not found");
-    });
-});
-
-test(' error when invalid vote_inc data is sent', () => {
-  return request(app)
-  .patch('/api/articles/1/')
-  .send({inc_votes : "ten" })
-  .expect(400)
-    .then(({ body }) => {
-      expect(body.msg).toBe("Bad request");
-    });
-});
-
-})
-
-

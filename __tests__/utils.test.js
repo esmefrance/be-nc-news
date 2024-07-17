@@ -3,7 +3,7 @@ const {
   createRef,
   formatComments,
 } = require("../db/seeds/utils");
-const  checkArticleExists  = require("../db/utils");
+const  {checkArticleExists, checkCommentExists}  = require("../db/utils");
 
 describe("convertTimestampToDate", () => {
   test("returns a new object", () => {
@@ -113,6 +113,20 @@ describe('checkArticleExists', () => {
 
   test('should return false if the article does not exist', () => {
     return checkArticleExists(999).then((result)=>{
+      expect(result).toBe(false)
+    })
+  });
+});
+
+describe('checkCommentExists', () => {
+  test('should return true if the comment exists', () => {
+    return checkCommentExists(2).then((result)=>{
+      expect(result).toBe(true)
+    })
+  });
+
+  test('should return false if the comment does not exist', () => {
+    return checkCommentExists(99).then((result)=>{
       expect(result).toBe(false)
     })
   });
