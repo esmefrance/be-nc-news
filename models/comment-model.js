@@ -1,6 +1,6 @@
 const getArticleByID = require("../controllers/article-controller");
 const db = require("../db/connection");
-const checkArticleExists = require("../db/utils");
+const {checkArticleExists, checkCommentExists} = require("../db/utils");
 
 
 exports.fetchCommentsByArticle = (articleID) => {
@@ -33,7 +33,7 @@ exports.addCommentToArticle = (articleID, { body, author}) => {
   const article_id = articleID
   const queryValues = [body, author, article_id];
   const promiseArray = [];
-  let sqlString = `INSERT INTO comments (body, author, article_id) VALUES($1, $2, $3) RETURNING *;`;
+  const sqlString = `INSERT INTO comments (body, author, article_id) VALUES($1, $2, $3) RETURNING *;`;
 
   promiseArray.push(db.query(sqlString, queryValues));
 
@@ -47,7 +47,23 @@ exports.addCommentToArticle = (articleID, { body, author}) => {
     } else if(body.length ===0){
       return Promise.reject({ status: 400, msg: "Bad request" });
     }
-
     return queryResults.rows[0];
   });
 };
+
+exports.removeComment = (commentID) =>{
+const sqlString = 'DELETE FROM comments WHERE comment_id = $1 RETURNING *;'
+const promiseArray = [];
+promiseArray.push(db.query(sqlString, [commentID]));
+
+if (commentID !== undefined) {
+  promiseArray.push(checkCommentExists(commentID));
+}
+
+return Promise.all(promiseArray).then(([queryResults, commentResults]) => {
+  if (queryResults.rows.length === 0 && commentResults === false) {
+    return Promise.reject({ status: 404, msg: "Not found" });
+  } 
+  return queryResults.rows[0];
+});
+}
