@@ -117,43 +117,88 @@ describe("GET all articles", () => {
   });
 });
 
-describe('GET /api/articles?sort_by=x&order=ASC', () => {
+describe("GET /api/articles?sort_by=x&order=ASC", () => {
   test('should return all articles sorted by "title" in ascending order', () => {
     return request(app)
-    .get("/api/articles?sort_by=title&order=ASC")
-    .expect(200)
-    .then((response) => {
-      const articles = response.body.articles;
-      expect(articles).toBeSortedBy("title", { ascending: true });
-    })
+      .get("/api/articles?sort_by=title&order=ASC")
+      .expect(200)
+      .then((response) => {
+        const articles = response.body.articles;
+        expect(articles).toBeSortedBy("title", { descending: false });
+      });
   });
 
   test('should return all articles sorted by "author" in descending order', () => {
     return request(app)
-    .get("/api/articles?sort_by=author&order=DESC")
-    .expect(200)
-    .then((response) => {
-      const articles = response.body.articles;
-      expect(articles).toBeSortedBy("author", { descending: true });
-    })
+      .get("/api/articles?sort_by=author&order=DESC")
+      .expect(200)
+      .then((response) => {
+        const articles = response.body.articles;
+        expect(articles).toBeSortedBy("author", { descending: true });
+      });
   });
-test('400: Bad request error if invalid sort_by given ', () => {
-  return request(app)
-  .get("/api/articles?sort_by=article_image_url&order=DESC")
-  .expect(400)
-  .then(({ body }) => {
-    expect(body.msg).toBe("Bad request");
+
+  test('should return all articles sorted by "votes" in descending order', () => {
+    return request(app)
+      .get("/api/articles?sort_by=votes&order=DESC")
+      .expect(200)
+      .then((response) => {
+        const articles = response.body.articles;
+        expect(articles).toBeSortedBy("votes", { descending: true });
+      });
+  });
+  test("400: Bad request error if invalid sort_by given ", () => {
+    return request(app)
+      .get("/api/articles?sort_by=article_image_url&order=DESC")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+
+  test("404: Not found error if invalid order given", () => {
+    return request(app)
+      .get("/api/articles?sort_by=title&order=atoz")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
   });
 });
 
-test('404: Not found error if invalid order given', () => {
-  return request(app)
-  .get("/api/articles?sort_by=title&order=atoz")
-  .expect(404)
-  .then(({ body }) => {
-    expect(body.msg).toBe("Not found");
+describe("GET articles filter by topic and sort e.g. GET /api/articles?topic=mitch&sort_by=title&order=ASC", () => {
+  test('should return all articles with topic mitch sorted by "title" in ascending order', () => {
+    return request(app)
+      .get("/api/articles?topic=mitch&sort_by=title&order=ASC")
+      .expect(200)
+      .then((response) => {
+        const articles = response.body.articles;
+        expect(articles).toBeSortedBy("title", { descending: false });
+        articles.forEach((article) => {
+          expect(article.topic).toBe("mitch");
+        });
+      });
   });
-});
+  test('should return all articles with topic cats sorted by "author" in descending order', () => {
+    return request(app)
+      .get("/api/articles?topic=cats&sort_by=author&order=ASC")
+      .expect(200)
+      .then((response) => {
+        const articles = response.body.articles;
+        expect(articles).toBeSortedBy("author", { descending: false });
+        articles.forEach((article) => {
+          expect(article.topic).toBe("cats");
+        });
+      });
+  });
+  test("404: Bad request error when invalid topic is entered ", () => {
+    return request(app)
+      .get("/api/articles?topic=pear&sort_by=title&order=ASC")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
 });
 
 describe("GET all article comments", () => {
@@ -288,7 +333,8 @@ describe("PATCH /api/articles/:article_id/", () => {
           author: "icellusedkars",
           created_at: expect.any(String),
           votes: 10,
-          article_img_url: "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+          article_img_url:
+            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
         });
       });
   });
@@ -358,31 +404,31 @@ describe("DELETE /api/comments/:comment_id/", () => {
   });
 });
 
-describe('GET /api/users/', () => {
-  test('should return an array with the correct number of user objects', () => {
+describe("GET /api/users/", () => {
+  test("should return an array with the correct number of user objects", () => {
     return request(app)
-    .get("/api/users")
-    .expect(200)
-    .then((response) => {
-      const users = response.body.users;
-      expect(Array.isArray(users)).toBe(true);
-      expect(users.length).toEqual(4)
-      users.forEach((user) => {
-        expect(user).toEqual({
-          username: expect.any(String),
-          name: expect.any(String),
-          avatar_url: expect.any(String)
+      .get("/api/users")
+      .expect(200)
+      .then((response) => {
+        const users = response.body.users;
+        expect(Array.isArray(users)).toBe(true);
+        expect(users.length).toEqual(4);
+        users.forEach((user) => {
+          expect(user).toEqual({
+            username: expect.any(String),
+            name: expect.any(String),
+            avatar_url: expect.any(String),
+          });
         });
       });
-  })
-})
+  });
 
-    test('error when endpoint is spelt incorrectly', () => {
-      return request(app)
+  test("error when endpoint is spelt incorrectly", () => {
+    return request(app)
       .get("/api/userz")
       .expect(404)
       .then(({ body }) => {
         expect(body.msg).toBe("Not found");
       });
-    })
   });
+});

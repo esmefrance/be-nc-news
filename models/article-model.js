@@ -16,26 +16,33 @@ exports.fetchArticleByID = (articleID) => {
     });
 };
 
-exports.fetchAllArticles = (sort_by = "created_at", order = "DESC") => {
+exports.fetchAllArticles = (topic, sort_by = "created_at", order = "DESC") => {
   const validSortBys = ["title", "topic", "author", "votes", "created_at"];
   const validOrderBys = ["ASC", "DESC"];
+  const validTopics = ["mitch", "cats", "coding", "football", "cooking"];
+  if (!validSortBys.includes(sort_by) || !validOrderBys.includes(order)) {
+    return Promise.reject({ status: 400, msg: "Bad request" });
+  }
+  let queryString = `SELECT articles.article_id, articles.title, articles.topic, articles.author, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.article_id)::INT AS comment_count FROM articles LEFT JOIN comments ON articles.article_id =comments.article_id`;
 
-  const query = `SELECT articles.article_id, articles.title, articles.topic, articles.author, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.article_id)::INT AS comment_count FROM articles LEFT JOIN comments ON comments.article_id =articles.article_id GROUP BY 
-        articles.article_id, 
-        articles.title, 
-        articles.topic, 
-        articles.author, 
-        articles.created_at, 
-        articles.votes, 
-        articles.article_img_url
-        ORDER BY articles.${sort_by} ${order};`;
+  if (topic) {
+    if (!validTopics.includes(topic)) {
+      return Promise.reject({ status: 400, msg: "Bad request" });
+    }
+    queryString += ` WHERE articles.topic='${topic}'`;
+  }
+
+  queryString += ` GROUP BY  articles.article_id,
+  articles.title,
+  articles.topic,
+  articles.author,
+  articles.created_at,
+  articles.votes,
+  articles.article_img_url ORDER BY articles.${sort_by} ${order};`;
 
   return db
-    .query(query)
+    .query(queryString)
     .then(({ rows }) => {
-      if (!validSortBys.includes(sort_by) || !validOrderBys.includes(order)) {
-        return Promise.reject({ status: 400, message: "Bad request" });
-      }
       return rows;
     })
     .catch((err) => {
