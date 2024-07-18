@@ -1,4 +1,4 @@
-const {fetchTopics, fetchArticleByID}= require("../models/basic-model")
+const {fetchTopics}= require("../models/basic-model")
 const endpoints =require("../endpoints.json")
 
 

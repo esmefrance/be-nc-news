@@ -5,13 +5,13 @@ const {checkArticleExists, checkCommentExists} = require("../db/utils");
 
 exports.fetchCommentsByArticle = (articleID) => {
   const queryValues = [];
-  let sqlString = "SELECT * FROM comments ";
+  let sqlString = `SELECT * FROM comments `;
 
   if (articleID) {
-    sqlString += "WHERE article_id =$1 ";
+    sqlString += `WHERE article_id =$1 `;
     queryValues.push(articleID);
   }
-  sqlString += "ORDER BY created_at DESC;";
+  sqlString += `ORDER BY created_at DESC;`;
 
   const promiseArray = [];
   promiseArray.push(db.query(sqlString, queryValues));
@@ -52,7 +52,7 @@ exports.addCommentToArticle = (articleID, { body, author}) => {
 };
 
 exports.removeComment = (commentID) =>{
-const sqlString = 'DELETE FROM comments WHERE comment_id = $1 RETURNING *;'
+const sqlString = `DELETE FROM comments WHERE comment_id = $1 RETURNING *;`
 const promiseArray = [];
 promiseArray.push(db.query(sqlString, [commentID]));
 
