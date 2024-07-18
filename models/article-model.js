@@ -3,7 +3,13 @@ const { checkArticleExists } = require("../db/utils");
 
 exports.fetchArticleByID = (articleID) => {
   return db
-    .query(`SELECT *FROM articles WHERE article_id =$1`, [articleID])
+    .query(`SELECT articles.article_id, articles.title, articles.topic, articles.author, articles.body, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.article_id)::INT AS comment_count FROM articles LEFT JOIN comments ON articles.article_id =comments.article_id WHERE articles.article_id =$1 GROUP BY  articles.article_id,
+  articles.title,
+  articles.topic,
+  articles.author,
+  articles.created_at,
+  articles.votes,
+  articles.article_img_url;`, [articleID])
     .then(({ rows }) => {
       const article = rows[0];
       if (!article) {
@@ -56,7 +62,7 @@ exports.updateArticle = (articleID, patchInfo) => {
   const promiseArray = [];
 
   let sqlString =
-    "UPDATE articles SET votes = votes+ $1 WHERE article_id= $2 RETURNING *;";
+    `UPDATE articles SET votes = votes+ $1 WHERE article_id= $2 RETURNING *;`;
 
   promiseArray.push(db.query(sqlString, queryValues));
 

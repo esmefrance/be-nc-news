@@ -35,6 +35,7 @@ app.delete("/api/comments/:comment_id/", deleteComment);
 app.get("/api/users/", getUsers);
 
 app.use(( request, response, next) => {
+
   response.status(404).send({ msg: "Not found" });
   next();
 });
