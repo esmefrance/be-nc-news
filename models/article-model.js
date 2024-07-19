@@ -77,3 +77,19 @@ exports.updateArticle = (articleID, patchInfo) => {
     return queryResults.rows[0];
   });
 };
+
+exports.createArticle = ({author, title, body, topic, article_img_url}) =>{
+  const queryValues = [author, title, body, topic, article_img_url]
+
+  
+  const sqlString = `INSERT INTO articles (author, title, body, topic, article_img_url) VALUES($1, $2, $3, $4, $5) RETURNING *;`;
+
+  return db
+  .query(sqlString, queryValues)
+  .then(({ rows }) => {
+    return rows[0]
+  })
+  .catch((err) => {
+    throw err;
+  });
+}
