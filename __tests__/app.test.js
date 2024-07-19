@@ -491,7 +491,7 @@ describe("PATCH /api/comments/:comment_id", () => {
           expect(body.msg).toBe("Bad request");
         });
     });
-    test("error when comment_id sent does not exist", () => {
+    test("404: not found error when comment_id sent does not exist", () => {
       return request(app)
         .patch("/api/comments/12345")
         .send({ inc_votes: 10 })
@@ -501,3 +501,78 @@ describe("PATCH /api/comments/:comment_id", () => {
         });
     });
   })
+
+  describe('POST /api/articles', () => {
+    test('should create a new article with the relevant properties', () => {
+      return request(app)
+      .post("/api/articles/")
+      .send({
+        author:"butter_bridge",
+        title: "Ragdoll cats are fluffy shadows",
+        body: " While many cat lovers appreciate the independent, aloof nature that cats are renowned for, a ragdoll doesn’t fit this brief; they are more likely to shadow you around the house, requesting cuddles.",
+        topic: "cats",
+        article_img_url: "https://cdn.mos.cms.futurecdn.net/PAyDK8eyvNTtwHXHeWTiiD-650-80.jpg?w=700&h=700",
+      })
+      .expect(201)
+      .then(({ body }) => {
+        expect(body.article).toMatchObject({
+          article_id:  expect.any(Number),
+          votes: expect.any(Number),
+          author:"butter_bridge",
+          title: "Ragdoll cats are fluffy shadows",
+          body: " While many cat lovers appreciate the independent, aloof nature that cats are renowned for, a ragdoll doesn’t fit this brief; they are more likely to shadow you around the house, requesting cuddles.",
+          topic: "cats",
+          article_img_url: "https://cdn.mos.cms.futurecdn.net/PAyDK8eyvNTtwHXHeWTiiD-650-80.jpg?w=700&h=700",
+          votes: expect.any(Number),
+          created_at: expect.any(String)
+        });
+      });
+    });
+
+    test('400: Bad request error when essential article properties are not sent', () => {
+      return request(app)
+      .post("/api/articles/")
+      .send({
+        author:"butter_bridge",
+        title: "Whats the difference between tortoiseshell and calico cats",
+        topic: "cats"
+      })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+      });
+
+      test('404: Not found error when author does not exist', () => {
+        return request(app)
+        .post("/api/articles/")
+        .send({
+          author:"brian",
+          title: "Cats cats cats",
+          body: "Cats are the best!",
+          topic: "cats",
+          article_img_url: "https://cdn.mos.cms.futurecdn.net/PAyDK8eyvNTtwHXHeWTiiD-650-80.jpg?w=700&h=700",
+        })
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Not found");
+        });
+        });
+
+        test('404: Not found error property value is in the wrong format', () => {
+          return request(app)
+          .post("/api/articles/")
+          .send({
+            author:"butter_bridge",
+            title: "Dogs dogs dogs",
+            body: "Dogs are the best!",
+            topic: 10,
+            article_img_url: "https://cdn.mos.cms.futurecdn.net/PAyDK8eyvNTtwHXHeWTiiD-650-80.jpg?w=700&h=700",
+          })
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).toBe("Not found");
+          });
+          });
+    })
+
