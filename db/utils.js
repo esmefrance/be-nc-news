@@ -40,4 +40,6 @@ function checkUserExists (username) {
     })
 }
 
+
+
 module.exports = {checkArticleExists, checkCommentExists, checkTopicExists, checkUserExists}

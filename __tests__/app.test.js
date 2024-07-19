@@ -62,7 +62,7 @@ describe("GET articles by ID", () => {
           votes: 100,
           article_img_url:
             "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
-            comment_count: 11
+          comment_count: 11,
         });
       });
   });
@@ -433,22 +433,23 @@ describe("GET /api/users/", () => {
       });
   });
 });
-describe('GET /api/users/:username', () => {
-  test('should return a user object with the relevant properties', () => {
+describe("GET /api/users/:username", () => {
+  test("should return a user object with the relevant properties", () => {
     return request(app)
       .get("/api/users/lurker")
       .expect(200)
       .then((response) => {
-        const user = response.body.user
+        const user = response.body.user;
         expect(user).toMatchObject({
           username: "lurker",
           name: "do_nothing",
-          avatar_url: "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png"
+          avatar_url:
+            "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png",
         });
-      })
+      });
   });
 
-  test('400: Bad request when user does not exist', () => {
+  test("400: Bad request when user does not exist", () => {
     return request(app)
       .get("/api/users/batman")
       .expect(404)
@@ -457,3 +458,46 @@ describe('GET /api/users/:username', () => {
       });
   });
 });
+
+describe("PATCH /api/comments/:comment_id", () => {
+  test("should update update the votes on a comment by comment_id", () => {
+    return request(app)
+      .patch("/api/comments/1")
+      .send({ inc_votes: 4 })
+      .then(({ body: { comment } }) => {
+        expect(comment).toMatchObject({
+          comment_id: 1,
+          votes: 20,
+        });
+      })
+    })
+
+    test("404: Bad request error when no inc_votes value is sent", () => {
+      return request(app)
+        .patch("/api/comments/5")
+        .send({})
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request");
+        });
+    });
+
+    test("400: Bad request error when invalid inc_votes value is sent", () => {
+      return request(app)
+        .patch("/api/comments/5")
+        .send({ inc_votes: "fifty" })
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request");
+        });
+    });
+    test("error when comment_id sent does not exist", () => {
+      return request(app)
+        .patch("/api/comments/12345")
+        .send({ inc_votes: 10 })
+        .expect(404)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Not found");
+        });
+    });
+  })

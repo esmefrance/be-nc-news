@@ -1,4 +1,3 @@
-const getArticleByID = require("../controllers/article-controller");
 const db = require("../db/connection");
 const {checkArticleExists, checkCommentExists} = require("../db/utils");
 
@@ -66,4 +65,26 @@ return Promise.all(promiseArray).then(([queryResults, commentResults]) => {
   } 
   return queryResults.rows[0];
 });
+}
+
+exports.updateComment = (commentID, patchInfo) =>{
+  const voteUpdate = patchInfo.inc_votes;
+  const queryValues = [voteUpdate, commentID];
+  const promiseArray = [];
+
+  let sqlString =
+    `UPDATE comments SET votes = votes+ $1 WHERE comment_id= $2 RETURNING *;`;
+
+  promiseArray.push(db.query(sqlString, queryValues));
+
+  if (commentID !== undefined) {
+    promiseArray.push(checkCommentExists(commentID));
+  }
+
+  return Promise.all(promiseArray).then(([queryResults, commentResults]) => {
+    if (queryResults.rows.length === 0 && commentResults === false) {
+      return Promise.reject({ status: 404, msg: "Not found" });
+    }
+    return queryResults.rows[0];
+  });
 }
