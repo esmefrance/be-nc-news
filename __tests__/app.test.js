@@ -433,3 +433,27 @@ describe("GET /api/users/", () => {
       });
   });
 });
+describe('GET /api/users/:username', () => {
+  test('should return a user object with the relevant properties', () => {
+    return request(app)
+      .get("/api/users/lurker")
+      .expect(200)
+      .then((response) => {
+        const user = response.body.user
+        expect(user).toMatchObject({
+          username: "lurker",
+          name: "do_nothing",
+          avatar_url: "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png"
+        });
+      })
+  });
+
+  test('400: Bad request when user does not exist', () => {
+    return request(app)
+      .get("/api/users/batman")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Not found");
+      });
+  });
+});
