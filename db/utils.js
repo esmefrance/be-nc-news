@@ -20,4 +20,24 @@ function checkCommentExists (commentID) {
     })
 }
 
-module.exports = {checkArticleExists, checkCommentExists}
+function checkTopicExists (topic) {
+    return db.query('SELECT * FROM topics WHERE slug =$1',[topic]).then(({rows})=>{
+        if(rows.length ===0){
+            return Promise.reject({ status: 404, msg: "Not found" });
+        } else if(rows.length===1){
+            return true
+        }
+    })
+}
+
+function checkUserExists (username) {
+    return db.query('SELECT * FROM users WHERE username =$1',[username]).then(({rows})=>{
+        if(rows.length ===0){
+            return Promise.reject({ status: 404, msg: "Not found" });
+        } else if(rows.length===1){
+            return true
+        }
+    })
+}
+
+module.exports = {checkArticleExists, checkCommentExists, checkTopicExists, checkUserExists}

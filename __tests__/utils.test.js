@@ -3,7 +3,12 @@ const {
   createRef,
   formatComments,
 } = require("../db/seeds/utils");
-const  {checkArticleExists, checkCommentExists}  = require("../db/utils");
+const {
+  checkArticleExists,
+  checkCommentExists,
+  checkTopicExists,
+  checkUserExists,
+} = require("../db/utils");
 
 describe("convertTimestampToDate", () => {
   test("returns a new object", () => {
@@ -104,30 +109,60 @@ describe("formatComments", () => {
   });
 });
 
-describe('checkArticleExists', () => {
-  test('should return true if the article exists', () => {
-    return checkArticleExists(9).then((result)=>{
-      expect(result).toBe(true)
-    })
+describe("checkArticleExists", () => {
+  test("should return true if the article exists", () => {
+    return checkArticleExists(9).then((result) => {
+      expect(result).toBe(true);
+    });
   });
 
-  test('should return false if the article does not exist', () => {
-    return checkArticleExists(999).then((result)=>{
-      expect(result).toBe(false)
-    })
+  test("should return false if the article does not exist", () => {
+    return checkArticleExists(999).then((result) => {
+      expect(result).toBe(false);
+    });
   });
 });
 
-describe('checkCommentExists', () => {
-  test('should return true if the comment exists', () => {
-    return checkCommentExists(2).then((result)=>{
-      expect(result).toBe(true)
-    })
+describe("checkCommentExists", () => {
+  test("should return true if the comment exists", () => {
+    return checkCommentExists(2).then((result) => {
+      expect(result).toBe(true);
+    });
   });
 
-  test('should return false if the comment does not exist', () => {
-    return checkCommentExists(99).then((result)=>{
-      expect(result).toBe(false)
-    })
+  test("should return false if the comment does not exist", () => {
+    return checkCommentExists(99).then((result) => {
+      expect(result).toBe(false);
+    });
+  });
+});
+
+describe("checkTopicExists", () => {
+  test("should return true if the topic exists", () => {
+    return checkTopicExists("cats").then((result) => {
+      expect(result).toBe(true);
+    });
+  });
+
+  test("404: Not found error if the topic does not exist", () => {
+    expect(checkTopicExists("bananas")).rejects.toEqual({
+      status: 404,
+      msg: "Not found",
+    });
+  });
+});
+
+describe("checkUserExists", () => {
+  test("should return true if the user exists", () => {
+    return checkUserExists("rogersop").then((result) => {
+      expect(result).toBe(true);
+    });
+  });
+
+  test("404: Not found error if the user does not exist", () => {
+    expect(checkUserExists("batman")).rejects.toEqual({
+      status: 404,
+      msg: "Not found",
+    });
   });
 });
