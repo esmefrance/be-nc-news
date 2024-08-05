@@ -10,8 +10,8 @@ exports.getArticleByID =( request, response, next) => {
 }
 
   exports.getAllArticles =( request, response, next) => {
-    const {topic, sort_by, order} = request.query
-    fetchAllArticles(topic, sort_by, order).then((articles) => {
+    const { topic, sort_by, order} = request.query
+    fetchAllArticles( topic, sort_by, order).then((articles) => {
         response.status(200).send({ articles: articles });
       }).catch((err)=>{
         next(err)
